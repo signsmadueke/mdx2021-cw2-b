@@ -3,14 +3,19 @@ var app = express();
 const path = require("path");
 const fs = require("fs");
 var cors = require('cors');
+
 //APPLICATION MIDDLEWARES
 app.use(cors())
 app.use(express.json());
+
+// LOGGER MIDDLEWARE
 app.use(function (req, res, next) {
     console.log("Request URL: " + req.url);
     console.log("Request Date: " + new Date());
     next();
 });
+
+// STATIC FILE MIDDLEWARE
 app.use(function (req, res, next) {
     // Uses path.join to find the path where the file should be
     var filePath = path.join(__dirname, 'static', req.url);
@@ -43,7 +48,7 @@ app.get('/', (req, res, next) => {
     res.send('Select a collection, e.g., /collection/messages');
 });
 
-
+// GET - FETCH ALL ORDERS
 app.get('/collection/:collectionName', (req, res, next) => {
     req.collection.find({}).toArray((e, results) => {
         if (e) return next(e)
@@ -51,6 +56,7 @@ app.get('/collection/:collectionName', (req, res, next) => {
     })
 });
 
+// POST - ADD NEW ORDER
 app.post('/collection/:collectionName', (req, res, next) => {
     req.collection.insert(req.body, (e, results) => {
         if (e) return next(e);
@@ -58,6 +64,7 @@ app.post('/collection/:collectionName', (req, res, next) => {
     })
 })
 
+// PUT - UPDATE ORDER
 app.put('/collection/:collectionName/:id', (req, res, next) => {
     req.collection.update({
             _id: new ObjectID(req.params.id)
@@ -77,8 +84,8 @@ app.put('/collection/:collectionName/:id', (req, res, next) => {
         })
 })
 
+// THE SEARCH FUNCTION
 app.get('/collection/:collectionName/:query', (req, res, next) => {
-
     const query = {
         "$or": [{
                 'topic': {
@@ -94,8 +101,6 @@ app.get('/collection/:collectionName/:query', (req, res, next) => {
             }
         ]
     };
-
-
     req.collection.find(query).toArray((e, results) => {
         if (e) return next(e)
         res.send(results)
